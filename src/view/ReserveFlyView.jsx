@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
 import { supabase } from "../db/supabaseClient"; // Importar configuración de Supabase
-import LogoutButton from "../components/LogoutButton";
 import { UserContext } from "../context/UserContext"; // Importa el contexto del usuario
 
 function ReserveFlyView() {
@@ -8,9 +7,9 @@ function ReserveFlyView() {
   const [rutas, setRutas] = useState([]);
   const [aeropuertos, setAeropuertos] = useState([]);
   const [selectedRuta, setSelectedRuta] = useState(null);
-  const [additionalInfo, setAdditionalInfo] = useState({
-    telefono: "",
-    documento_identidad: "",
+  const [equipaje, setEquipaje] = useState({
+    peso: "",
+    dimensiones: "",
   });
 
   useEffect(() => {
@@ -31,25 +30,88 @@ function ReserveFlyView() {
     else setAeropuertos(data);
   };
 
-  const handleAdditionalChange = (e) => {
-    setAdditionalInfo({ ...additionalInfo, [e.target.name]: e.target.value });
+  const handleEquipajeChange = (e) => {
+    setEquipaje({ ...equipaje, [e.target.name]: e.target.value });
   };
 
   const handleReserva = async () => {
-    // Crear un nuevo ticket en la base de datos
+    // Verificar si el pasajero ya existe en la base de datos
+    const { data: existingPasajero, error: checkError } = await supabase
+      .from("pasajeros")
+      .select("*")
+      .eq("email", user.email)
+      .single();
+
+    if (checkError && checkError.code !== "PGRST116") {
+      console.error("Error checking for existing passenger:", checkError);
+      return;
+    }
+
+    let pasajeroId;
+    if (existingPasajero) {
+      // Si el pasajero ya existe, usar su ID
+      pasajeroId = existingPasajero.id_pasajero;
+    } else {
+      // Si el pasajero no existe, crear uno nuevo
+      const { data: newPasajero, error: insertError } = await supabase
+        .from("pasajeros")
+        .insert([
+          {
+            nombre: user.nombre,
+            apellido: user.apellido,
+            email: user.email,
+            telefono: user.telefono,  // Usar teléfono del contexto
+            documento_identidad: user.documento_identidad,  // Usar documento del contexto
+          },
+        ])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Error inserting new passenger:", insertError);
+        return;
+      }
+
+      pasajeroId = newPasajero.id_pasajero;
+    }
+
+    // Crear la reserva (ticket) asociada al pasajero y vuelo
     try {
-      const reservationInfo = {
-        ...user, // Datos del contexto del usuario
-        ...additionalInfo, // Información adicional proporcionada
-        ruta_id: selectedRuta,
+      const ticketInfo = {
+        id_vuelo: selectedRuta, // Esto debería ser el id del vuelo seleccionado
+        id_pasajero: pasajeroId,
+        numero_ticket: "TKT-" + Math.random().toString(36).substr(2, 9), // Generar un número de ticket aleatorio
+        clase: "Economía", // Esto puede variar dependiendo de lo que se elija
+        precio: 100.0, // Esto debe ser calculado o asignado correctamente
       };
 
       const { data: reserva, error } = await supabase
-        .from("reservas")
-        .insert([reservationInfo])
+        .from("tickets")
+        .insert([ticketInfo])
         .select();
 
       if (error) throw error;
+
+      // Si la reserva es exitosa, insertar el equipaje
+      if (equipaje.peso && equipaje.dimensiones) {
+        const { data: equipajeData, error: equipajeError } = await supabase
+          .from("equipaje")
+          .insert([
+            {
+              id_pasajero: pasajeroId,
+              peso: equipaje.peso,
+              dimensiones: equipaje.dimensiones,
+            },
+          ])
+          .select()
+          .single();
+
+        if (equipajeError) {
+          console.error("Error inserting luggage:", equipajeError);
+        } else {
+          console.log("Equipaje insertado:", equipajeData);
+        }
+      }
 
       alert("Reserva realizada con éxito");
     } catch (error) {
@@ -67,6 +129,8 @@ function ReserveFlyView() {
         <p><strong>Nombre:</strong> {user.nombre}</p>
         <p><strong>Apellido:</strong> {user.apellido}</p>
         <p><strong>Email:</strong> {user.email}</p>
+        <p><strong>Teléfono:</strong> {user.telefono}</p> {/* Mostrar teléfono */}
+        <p><strong>Documento de Identidad:</strong> {user.documento_identidad}</p> {/* Mostrar documento */}
       </div>
 
       {/* Selección de la ruta */}
@@ -85,23 +149,23 @@ function ReserveFlyView() {
         </select>
       </div>
 
-      {/* Campos adicionales */}
+      {/* Información de equipaje */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Información Adicional</h2>
+        <h2 className="text-lg font-semibold mb-2">Información de Equipaje</h2>
         <input
-          type="text"
-          name="telefono"
-          placeholder="Teléfono"
-          value={additionalInfo.telefono}
-          onChange={handleAdditionalChange}
+          type="number"
+          name="peso"
+          placeholder="Peso (kg)"
+          value={equipaje.peso}
+          onChange={handleEquipajeChange}
           className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
         />
         <input
           type="text"
-          name="documento_identidad"
-          placeholder="Documento de Identidad"
-          value={additionalInfo.documento_identidad}
-          onChange={handleAdditionalChange}
+          name="dimensiones"
+          placeholder="Dimensiones (cm)"
+          value={equipaje.dimensiones}
+          onChange={handleEquipajeChange}
           className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
         />
       </div>
@@ -113,7 +177,6 @@ function ReserveFlyView() {
       >
         Confirmar Reserva
       </button>
-      <LogoutButton />
     </div>
   );
 }
