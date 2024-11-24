@@ -1,38 +1,41 @@
 import React, { useState } from 'react';
-import { supabase } from '../db/supabaseClient';  // Asegúrate de tener configurado el cliente de Supabase
-import { useNavigate } from 'react-router-dom';  // Importamos useNavigate para la redirección
+import { supabase } from '../db/supabaseClient'; // Cliente de Supabase configurado
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);  // Para mostrar errores
-  const [loading, setLoading] = useState(false);  // Para mostrar el estado de carga
+  const [error, setError] = useState(null); // Para mostrar errores
+  const [loading, setLoading] = useState(false); // Para mostrar el estado de carga
 
-  const navigate = useNavigate();  // Inicializamos el hook useNavigate
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);  // Reseteamos el error
+    setError(null); // Reseteamos el error
 
     try {
-      // Intentamos iniciar sesión con el email y la contraseña proporcionados
-      const { user, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Consulta en la tabla 'pasajeros' para verificar las credenciales
+      const { data: user, error: queryError } = await supabase
+        .from('pasajeros')
+        .select('*')
+        .eq('email', email)
+        .single(); // Recupera un único usuario que coincida con el correo
 
-      if (error) {
-        setError(error.message);  // Mostrar mensaje de error
+      if (queryError) {
+        setError('Error al buscar el usuario: ' + queryError.message);
+      } else if (!user || user.contraseña !== password) {
+        setError('Correo o contraseña incorrectos.');
       } else {
         console.log('Inicio de sesión exitoso:', user);
-        // Si el inicio de sesión es exitoso, redirigimos a la vista de reserva
-        navigate('/reserveFly');  // Redirige a la ruta de ReserveFlyView
+        // Redirige al usuario a la página de reservas si las credenciales son válidas
+        navigate('/reserveFly');
       }
     } catch (err) {
       setError('Error al iniciar sesión: ' + err.message);
     } finally {
-      setLoading(false);  // Termina el estado de carga
+      setLoading(false); // Termina el estado de carga
     }
   };
 

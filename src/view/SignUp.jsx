@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { supabase } from '../db/supabaseClient';  // Asegúrate de tener configurado el cliente de Supabase
-import { useNavigate } from 'react-router-dom';  // Importamos useNavigate para la redirección
+import { supabase } from '../db/supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 function SignUp() {
   const [email, setEmail] = useState('');
@@ -10,15 +10,15 @@ function SignUp() {
   const [apellido, setApellido] = useState('');
   const [telefono, setTelefono] = useState('');
   const [documentoIdentidad, setDocumentoIdentidad] = useState('');
-  const [error, setError] = useState(null); // Para mostrar errores
-  const [loading, setLoading] = useState(false); // Para mostrar el estado de carga
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();  // Inicializamos el hook useNavigate
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);  // Reseteamos el error
+    setError(null);
 
     // Verificar si las contraseñas coinciden
     if (password !== confirmPassword) {
@@ -28,41 +28,41 @@ function SignUp() {
     }
 
     try {
-      // Primero crear el usuario en Supabase
-      const { user, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      // Insertar el nuevo usuario en la tabla 'pasajeros'
+      const { data, error: insertError } = await supabase
+        .from('pasajeros')
+        .insert([
+          {
+            nombre,
+            apellido,
+            email,
+            telefono,
+            documento_identidad: documentoIdentidad,
+            contraseña: password, // Nota: Asegúrate de cifrar las contraseñas en un entorno real
+          },
+        ]);
 
-      if (error) {
-        setError(error.message); // Mostrar mensaje de error
-      } else {
-        // Si el usuario se ha creado exitosamente, registrar sus datos adicionales en la tabla Pasajeros
-        const { data, error: insertError } = await supabase
-          .from('pasajeros')
-          .insert([
-            {
-              nombre,
-              apellido,
-              email,
-              telefono,
-              documento_identidad: documentoIdentidad,
-              contraseña: password,  // Nota: En un entorno real, no debes almacenar contraseñas en texto plano
-            }
-          ]);
-
-        if (insertError) {
-          setError('Error al guardar los datos del pasajero: ' + insertError.message);
+      if (insertError) {
+        // Identificar si el error es por valores duplicados
+        if (insertError.message.includes('duplicate key value')) {
+          if (insertError.message.includes('pasajeros_email_key')) {
+            setError("El correo electrónico ya está en uso.");
+          } else if (insertError.message.includes('pasajeros_documento_identidad_key')) {
+            setError("El documento de identidad ya está en uso.");
+          } else {
+            setError("Error desconocido al registrar.");
+          }
         } else {
-          console.log('Registro exitoso y datos guardados:', data);
-          // Redirigimos al login después de un registro exitoso
-          navigate('/login');  // Redirige a la ruta de login
+          setError('Error al registrar el usuario: ' + insertError.message);
         }
+      } else {
+        console.log('Usuario registrado exitosamente:', data);
+        navigate('/login'); // Redirige al usuario al login
       }
     } catch (err) {
       setError('Error al registrar: ' + err.message);
     } finally {
-      setLoading(false); // Termina el estado de carga
+      setLoading(false);
     }
   };
 
