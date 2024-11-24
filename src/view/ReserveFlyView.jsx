@@ -21,8 +21,6 @@ function ReserveFlyView() {
   }, []);
 
   useEffect(() => {
-    console.log("vuelos:", vuelos);
-    console.log("selectedVuelo:", selectedVuelo);
   
     // Convertir selectedVuelo a un número entero
     const selectedVueloId = parseInt(selectedVuelo, 10);
@@ -36,11 +34,8 @@ function ReserveFlyView() {
         if (vueloSeleccionado) break; // Salir del loop si encontramos el vuelo
       }
   
-      console.log("Vuelo seleccionado:", vueloSeleccionado);
-  
       if (vueloSeleccionado) {
         let precio = vueloSeleccionado.precio;
-        console.log("Precio:", precio);
   
         // Ajuste del precio si es clase Business
         if (clase === "Business") {
@@ -98,7 +93,6 @@ function ReserveFlyView() {
 
   const handleVueloChange = (e) => {
     setSelectedVuelo(e.target.value);
-    console.log("vS:", e.target.value);
   };
 
   const handleEquipajeChange = (e) => {
@@ -114,8 +108,63 @@ function ReserveFlyView() {
   };
 
   const handleReserva = async () => {
-    // Lógica de reserva aquí, utilizando selectedVuelo, metodoPago, equipaje, clase y precioFinal
+    if (!selectedVuelo || !metodoPago || precioFinal <= 0) {
+      console.error("Datos de reserva incompletos");
+      alert("Por favor, completa todos los campos necesarios.");
+      return;
+    }
+  
+    try {
+      // Verificar que el vuelo existe
+      const { data: vuelo, error: vueloError } = await supabase
+        .from("vuelos")
+        .select("*")
+        .eq("id_vuelo", selectedVuelo)
+        .single();
+  
+      if (vueloError || !vuelo) {
+        alert("Vuelo no encontrado. Por favor, selecciona un vuelo válido.");
+        return;
+      }
+  
+      // Generar un número de ticket único
+      const numeroTicket = `TKT${selectedVuelo}-${Date.now()}`; // Ejemplo con ID de vuelo y timestamp
+  
+      // Insertar el ticket
+      const { data: ticketData, error: ticketError } = await supabase
+        .from("tickets")
+        .insert([
+          {
+            id_vuelo: selectedVuelo,
+            id_pasajero: user.id_pasajero, // ID del usuario como pasajero
+            numero_ticket: numeroTicket,
+            clase: clase,
+            precio: precioFinal,
+          },
+        ])
+        .select();
+  
+      if (ticketError) throw ticketError;
+  
+      console.log("Ticket creado exitosamente:", ticketData);
+  
+      // Confirmar la reserva
+      alert("Reserva realizada con éxito. Tu número de ticket es: " + numeroTicket);
+  
+      // Limpiar estados
+      setSelectedRuta(null);
+      setSelectedVuelo(null);
+      setEquipaje({ peso: "", dimensiones: "" });
+      setMetodoPago("");
+      setClase("Economy");
+      setPrecioFinal(0);
+    } catch (error) {
+      console.error("Error al crear el ticket:", error.message);
+      alert("Hubo un error al realizar la reserva. Intenta nuevamente.");
+    }
   };
+  
+  
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
