@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {supabase} from "../db/supabaseClient"; // Importar configuración de Supabase
+import LogoutButton from "../components/LogoutButton";
 
 function ReserveFlyView() {
   const [rutas, setRutas] = useState([]);
@@ -121,6 +122,7 @@ function ReserveFlyView() {
       >
         Confirmar Reserva
       </button>
+      <LogoutButton />
     </div>
   );
 }

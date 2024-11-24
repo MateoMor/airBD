@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import UserList from "./components/UserList";
 import Login from "./view/Login";
 import ReserveFlyView from "./view/ReserveFlyView";
 import SignUp from "./view/SignUp";
@@ -16,7 +15,6 @@ function App() {
           <Route path="/reserveFly" element={<ReserveFlyView />} /> 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} /> 
-          <Route path="/users" element={<UserList />} />  
         </Routes>
       </div>
     </Router> 

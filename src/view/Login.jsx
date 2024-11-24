@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { supabase } from '../db/supabaseClient'; // Cliente de Supabase configurado
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../context/UserContext'; // Contexto del usuario
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -8,6 +9,7 @@ function Login() {
   const [error, setError] = useState(null); // Para mostrar errores
   const [loading, setLoading] = useState(false); // Para mostrar el estado de carga
 
+  const { setUser } = useContext(UserContext); // Acceder al estado global del usuario
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -23,13 +25,20 @@ function Login() {
         .eq('email', email)
         .single(); // Recupera un único usuario que coincida con el correo
 
-      if (queryError) {
-        setError('Error al buscar el usuario: ' + queryError.message);
-      } else if (!user || user.contraseña !== password) {
+      if (queryError || !user) {
+        setError('Correo o contraseña incorrectos.');
+      } else if (user.contraseña !== password) {
         setError('Correo o contraseña incorrectos.');
       } else {
         console.log('Inicio de sesión exitoso:', user);
-        // Redirige al usuario a la página de reservas si las credenciales son válidas
+
+        // Almacenar el usuario en el contexto
+        setUser(user);
+
+        // Guardar el estado del usuario en localStorage para mantener la sesión
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Redirigir a la página de reservas
         navigate('/reserveFly');
       }
     } catch (err) {
