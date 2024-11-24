@@ -12,6 +12,7 @@ function ReserveFlyView() {
     peso: "",
     dimensiones: "",
   });
+  const [metodoPago, setMetodoPago] = useState(""); // Nuevo estado para el método de pago
 
   useEffect(() => {
     // Cargar rutas y aeropuertos al montar el componente
@@ -70,9 +71,13 @@ function ReserveFlyView() {
     setEquipaje({ ...equipaje, [e.target.name]: e.target.value });
   };
 
+  const handleMetodoPagoChange = (e) => {
+    setMetodoPago(e.target.value); // Actualizar el método de pago
+  };
+
   const handleReserva = async () => {
     // Aquí debes agregar la lógica para crear la reserva
-    // Lo mismo que ya tenías en tu código pero ahora con selectedVuelo
+    // Lo mismo que ya tenías en tu código pero ahora con selectedVuelo y metodoPago
   };
 
   return (
@@ -146,10 +151,25 @@ function ReserveFlyView() {
         />
       </div>
 
+      {/* Selección de método de pago */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700">Método de Pago</label>
+        <select
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          onChange={handleMetodoPagoChange}
+          value={metodoPago}
+        >
+          <option value="">Seleccione un método de pago</option>
+          <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+          <option value="Paypal">Paypal</option>
+          <option value="Tarjeta de Débito">Tarjeta de Débito</option>
+        </select>
+      </div>
+
       <button
         className="px-4 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700"
         onClick={handleReserva}
-        disabled={!selectedVuelo}
+        disabled={!selectedVuelo || !metodoPago} // Deshabilitar si no se selecciona vuelo o método de pago
       >
         Confirmar Reserva
       </button>
