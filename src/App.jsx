@@ -5,23 +5,24 @@ import Login from "./view/Login";
 import ReserveFlyView from "./view/ReserveFlyView";
 import SignUp from "./view/SignUp";
 import TestApi from "./view/TestApi";
+import HomePage from './view/HomePage';
 
 function App() {
   return (
     <Router>
       <div>
-        {/* Puedes agregar aquí un Navbar o un componente de menú */}
-        
-        {/* Definir las rutas con el componente Routes */}
+       
         <Routes>
-          <Route path="/reserveFly" element={<ReserveFlyView />} />  {/* Página principal o vista de reserva */}
-          <Route path="/test" element={<TestApi />} />  {/* Página de prueba de API */}
-          <Route path="/login" element={<Login />} />  {/* Página de Login */}
-          <Route path="/signup" element={<SignUp />} />  {/* Página de Registro */}
-          <Route path="/users" element={<UserList />} />  {/* Página de listado de usuarios */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/reserveFly" element={<ReserveFlyView />} /> 
+          <Route path="/test" element={<TestApi />} /> 
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} /> 
+          <Route path="/users" element={<UserList />} />  
         </Routes>
       </div>
-    </Router>
+    </Router> 
+    
   );
 }
 
