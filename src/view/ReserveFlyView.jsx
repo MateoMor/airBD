@@ -30,7 +30,7 @@ function ReserveFlyView() {
   const fetchVuelos = async (rutaId) => {
     const { data, error } = await supabase
       .from("vuelos")
-      .select("*")
+      .select("*, precio") // Asegúrate de incluir la columna 'precio'
       .eq("id_ruta", rutaId);
     if (error) {
       console.error("Error fetching flights:", error);
@@ -116,7 +116,7 @@ function ReserveFlyView() {
               <optgroup key={fecha} label={fecha}>
                 {vuelos[fecha].map((vuelo) => (
                   <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
-                    {vuelo.numero_vuelo} - {vuelo.hora_salida} - {vuelo.destino}
+                    {vuelo.numero_vuelo} - {vuelo.hora_salida} - {vuelo.destino} - ${vuelo.precio} {/* Mostrar el precio aquí */}
                   </option>
                 ))}
               </optgroup>
