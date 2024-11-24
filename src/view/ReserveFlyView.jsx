@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
-import {supabase} from "../db/supabaseClient"; // Importar configuración de Supabase
+import React, { useState, useEffect, useContext } from "react";
+import { supabase } from "../db/supabaseClient"; // Importar configuración de Supabase
 import LogoutButton from "../components/LogoutButton";
+import { UserContext } from "../context/UserContext"; // Importa el contexto del usuario
 
 function ReserveFlyView() {
+  const { user } = useContext(UserContext); // Obtener información del usuario desde el contexto
   const [rutas, setRutas] = useState([]);
   const [aeropuertos, setAeropuertos] = useState([]);
   const [selectedRuta, setSelectedRuta] = useState(null);
-  const [passengerInfo, setPassengerInfo] = useState({
-    nombre: "",
-    apellido: "",
-    email: "",
+  const [additionalInfo, setAdditionalInfo] = useState({
     telefono: "",
     documento_identidad: "",
   });
@@ -32,21 +31,26 @@ function ReserveFlyView() {
     else setAeropuertos(data);
   };
 
-  const handlePassengerChange = (e) => {
-    setPassengerInfo({ ...passengerInfo, [e.target.name]: e.target.value });
+  const handleAdditionalChange = (e) => {
+    setAdditionalInfo({ ...additionalInfo, [e.target.name]: e.target.value });
   };
 
   const handleReserva = async () => {
-    // Crear un nuevo pasajero y ticket en la base de datos
+    // Crear un nuevo ticket en la base de datos
     try {
-      const { data: pasajero, error: errorPasajero } = await supabase
-        .from("pasajeros")
-        .insert([passengerInfo])
+      const reservationInfo = {
+        ...user, // Datos del contexto del usuario
+        ...additionalInfo, // Información adicional proporcionada
+        ruta_id: selectedRuta,
+      };
+
+      const { data: reserva, error } = await supabase
+        .from("reservas")
+        .insert([reservationInfo])
         .select();
 
-      if (errorPasajero) throw errorPasajero;
+      if (error) throw error;
 
-      // Aquí se podría añadir más lógica para el ticket y el pago.
       alert("Reserva realizada con éxito");
     } catch (error) {
       console.error("Error al crear la reserva:", error.message);
@@ -57,6 +61,15 @@ function ReserveFlyView() {
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-2xl font-bold mb-4">Reserva de Vuelo</h1>
 
+      {/* Mostrar información del usuario desde el contexto */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">Información del Usuario</h2>
+        <p><strong>Nombre:</strong> {user.nombre}</p>
+        <p><strong>Apellido:</strong> {user.apellido}</p>
+        <p><strong>Email:</strong> {user.email}</p>
+      </div>
+
+      {/* Selección de la ruta */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700">Ruta</label>
         <select
@@ -72,46 +85,23 @@ function ReserveFlyView() {
         </select>
       </div>
 
+      {/* Campos adicionales */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Información del Pasajero</h2>
-        <input
-          type="text"
-          name="nombre"
-          placeholder="Nombre"
-          value={passengerInfo.nombre}
-          onChange={handlePassengerChange}
-          className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
-        />
-        <input
-          type="text"
-          name="apellido"
-          placeholder="Apellido"
-          value={passengerInfo.apellido}
-          onChange={handlePassengerChange}
-          className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Correo electrónico"
-          value={passengerInfo.email}
-          onChange={handlePassengerChange}
-          className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
-        />
+        <h2 className="text-lg font-semibold mb-2">Información Adicional</h2>
         <input
           type="text"
           name="telefono"
           placeholder="Teléfono"
-          value={passengerInfo.telefono}
-          onChange={handlePassengerChange}
+          value={additionalInfo.telefono}
+          onChange={handleAdditionalChange}
           className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
         />
         <input
           type="text"
           name="documento_identidad"
           placeholder="Documento de Identidad"
-          value={passengerInfo.documento_identidad}
-          onChange={handlePassengerChange}
+          value={additionalInfo.documento_identidad}
+          onChange={handleAdditionalChange}
           className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
         />
       </div>
@@ -119,6 +109,7 @@ function ReserveFlyView() {
       <button
         className="px-4 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700"
         onClick={handleReserva}
+        disabled={!selectedRuta}
       >
         Confirmar Reserva
       </button>
