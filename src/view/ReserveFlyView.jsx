@@ -264,8 +264,12 @@ function ReserveFlyView() {
             onChange={handleVueloChange}
           >
             <option value="">Seleccione un vuelo</option>
-            {vuelos.map((fecha) => (
-              <optgroup key={fecha} label={fecha}>
+            {vuelos.map((fecha, index) => (
+              <optgroup
+                key={fecha}
+                label={fecha[index].fecha_salida}
+              >
+                {console.log("Fecha: ", fecha)}
                 {fecha.map((vuelo) => (
                   <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
                     {vuelo.numero_vuelo} - {vuelo.hora_salida} - {vuelo.destino}{" "}
