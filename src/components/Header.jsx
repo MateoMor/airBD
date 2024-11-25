@@ -9,9 +9,29 @@ function Header() {
     <header className="flex justify-between items-center p-4 bg-gray-800 text-white">
       {/* Logo a la izquierda */}
       <div className="text-3xl font-bold">
-        <span className="text-white">Air</span>
-        <span className="text-blue-600">DB</span>
+        <Link to="/" className="text-white hover:text-blue-400">
+          <span>Air</span>
+          <span className="text-blue-600">DB</span>
+        </Link>
       </div>
+
+      {/* Navegación */}
+      {user && (
+        <nav className="flex gap-4">
+          <Link
+            to="/reserveFly"
+            className="text-white hover:text-blue-400 px-4 py-2"
+          >
+            Reservar Vuelo
+          </Link>
+          <Link
+            to="/misTickets"
+            className="text-white hover:text-blue-400 px-4 py-2"
+          >
+            Mis Tickets
+          </Link>
+        </nav>
+      )}
 
       {/* Botones de Login, SignUp o Logout */}
       <div>
