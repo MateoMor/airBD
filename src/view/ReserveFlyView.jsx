@@ -11,7 +11,6 @@ function ReserveFlyView() {
   const [selectedVuelo, setSelectedVuelo] = useState(null);
   const [equipaje, setEquipaje] = useState({
     peso: "",
-    dimensiones: "",
   });
   const [metodoPago, setMetodoPago] = useState(""); // Estado para el método de pago
   const [clase, setClase] = useState("Economy"); // Estado para la clase seleccionada
@@ -114,8 +113,7 @@ function ReserveFlyView() {
       !selectedVuelo ||
       !metodoPago ||
       precioFinal <= 0 ||
-      !equipaje.peso ||
-      !equipaje.dimensiones
+      !equipaje.peso // No pedimos más datos de equipaje
     ) {
       // Mostrar una alerta si algún campo es incompleto
       alert("Por favor, completa todos los campos necesarios.");
@@ -203,7 +201,7 @@ function ReserveFlyView() {
       // Limpiar estados
       setSelectedRuta(null);
       setSelectedVuelo(null);
-      setEquipaje({ peso: "", dimensiones: "" });
+      setEquipaje({ peso: "" }); // Limpiar solo el peso
       setMetodoPago("");
       setClase("Economy");
       setPrecioFinal(0);
@@ -244,45 +242,45 @@ function ReserveFlyView() {
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           onChange={handleRutaChange}
         >
-          <option value="">Seleccione una ruta</option>
+          <option value="">Selecciona una ruta</option>
           {rutas.map((ruta) => (
             <option key={ruta.id_ruta} value={ruta.id_ruta}>
-              {ruta.origen} → {ruta.destino}
+              {ruta.origen} - {ruta.destino}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Selección del vuelo por fecha y hora */}
-      {Object.keys(vuelos).length > 0 && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">
-            Vuelo
-          </label>
-          <select
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            onChange={handleVueloChange}
-          >
-            <option value="">Seleccione un vuelo</option>
-            {vuelos.map((fecha, index) => (
-              <optgroup
-                key={fecha}
-                label={fecha[index].fecha_salida}
-              >
-                {console.log("Fecha: ", fecha)}
-                {fecha.map((vuelo) => (
-                  <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
-                    {vuelo.numero_vuelo} - {vuelo.hora_salida} - {vuelo.destino}{" "}
-                    - ${vuelo.precio}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
-      )}
+      {/* Selección del vuelo */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700">Vuelo</label>
+        <select
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          onChange={handleVueloChange}
+          value={selectedVuelo}
+        >
+          <option value="">Selecciona un vuelo</option>
+          {vuelos.flat().map((vuelo) => (
+            <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
+              {vuelo.fecha_salida} - {vuelo.hora_salida} | {vuelo.precio} €
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {/* Selección de clase */}
+      {/* Selección del peso del equipaje */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700">Peso del Equipaje</label>
+        <input
+          type="number"
+          name="peso"
+          value={equipaje.peso}
+          onChange={handleEquipajeChange}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      {/* Selección de la clase */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700">Clase</label>
         <select
@@ -295,64 +293,40 @@ function ReserveFlyView() {
         </select>
       </div>
 
-      {/* Información de equipaje */}
+      {/* Selección del método de pago */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Información de Equipaje</h2>
-        <input
-          type="number"
-          name="peso"
-          placeholder="Peso (kg)"
-          value={equipaje.peso}
-          onChange={handleEquipajeChange}
-          className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
-        />
-        <input
-          type="text"
-          name="dimensiones"
-          placeholder="Dimensiones (cm)"
-          value={equipaje.dimensiones}
-          onChange={handleEquipajeChange}
-          className="block w-full mb-2 p-2 border border-gray-300 rounded-md"
-        />
-      </div>
-
-      {/* Selección de método de pago */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">
-          Método de Pago
-        </label>
+        <label className="block text-sm font-medium text-gray-700">Método de Pago</label>
         <select
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           onChange={handleMetodoPagoChange}
           value={metodoPago}
         >
-          <option value="">Seleccione un método de pago</option>
-          <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
-          <option value="Paypal">Paypal</option>
-          <option value="Tarjeta de Débito">Tarjeta de Débito</option>
+          <option value="">Selecciona un método de pago</option>
+          <option value="Tarjeta">Tarjeta de Crédito</option>
+          <option value="Paypal">PayPal</option>
         </select>
       </div>
 
-      {/* Mostrar precio final */}
+      {/* Precio final */}
       <div className="mb-6">
-        <p className="text-lg font-semibold">Precio: ${precioFinal}</p>
+        <p className="font-semibold">Precio Final: {precioFinal} $</p>
       </div>
 
-      <div className="flex gap-4 mt-4">
-        <button
-          className="px-4 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700"
-          onClick={handleReserva}
-          disabled={!selectedVuelo || !metodoPago} // Deshabilitar si no se selecciona vuelo o método de pago
-        >
-          Confirmar Reserva
-        </button>
-        <button
-          className="px-4 py-2 bg-gray-600 text-white font-bold rounded-md hover:bg-gray-700"
-          onClick={handleVerTickets}
-        >
-          Ver tus Tickets
-        </button>
-      </div>
+      {/* Botón para realizar la reserva */}
+      <button
+        onClick={handleReserva}
+        className="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-md shadow-md hover:bg-blue-600"
+      >
+        Realizar Reserva
+      </button>
+
+      {/* Botón para ver los tickets */}
+      <button
+        onClick={handleVerTickets}
+        className="w-full py-2 px-4 mt-4 bg-gray-300 text-black font-semibold rounded-md shadow-md hover:bg-gray-400"
+      >
+        Ver Mis Tickets
+      </button>
     </div>
   );
 }
