@@ -30,6 +30,12 @@ function Header() {
           >
             Mis Tickets
           </Link>
+          <Link
+              to="/availableFlights"
+              className="text-white hover:text-blue-400 px-4 py-2"
+            >
+              Vuelos Disponibles
+            </Link>
         </nav>
       )}
 
@@ -58,6 +64,7 @@ function Header() {
             >
               Sign Up
             </Link>
+            
           </div>
         )}
       </div>

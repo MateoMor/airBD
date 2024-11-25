@@ -7,6 +7,8 @@ import HomePage from "./view/HomePage";
 import Header from "./components/Header";
 import { UserProvider } from "./context/UserContext";
 import UserTicketsView from "./view/UserTicketsView";
+import AvailableFlightsView from "./view/AvailableFlightsView";
+
 
 function App() {
   return (
@@ -18,6 +20,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/reserveFly" element={<ReserveFlyView />} />
             <Route path='/misTickets' element={<UserTicketsView />} />
+            <Route path="/availableFlights" element={<AvailableFlightsView />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
           </Routes>
