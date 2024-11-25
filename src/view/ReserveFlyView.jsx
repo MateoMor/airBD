@@ -109,12 +109,19 @@ function ReserveFlyView() {
   };
 
   const handleReserva = async () => {
-    if (!selectedVuelo || !metodoPago || precioFinal <= 0) {
-      console.error("Datos de reserva incompletos");
+    // Verificación de campos incompletos
+    if (
+      !selectedVuelo ||
+      !metodoPago ||
+      precioFinal <= 0 ||
+      !equipaje.peso ||
+      !equipaje.dimensiones
+    ) {
+      // Mostrar una alerta si algún campo es incompleto
       alert("Por favor, completa todos los campos necesarios.");
-      return;
+      return; // No proceder con la reserva
     }
-  
+
     try {
       // Verificar que el vuelo existe
       const { data: vuelo, error: vueloError } = await supabase
@@ -122,15 +129,15 @@ function ReserveFlyView() {
         .select("*")
         .eq("id_vuelo", selectedVuelo)
         .single();
-  
+
       if (vueloError || !vuelo) {
         alert("Vuelo no encontrado. Por favor, selecciona un vuelo válido.");
         return;
       }
-  
+
       // Generar un número de ticket único
       const numeroTicket = `TKT${selectedVuelo}-${Date.now()}`; // Ejemplo con ID de vuelo y timestamp
-  
+
       // Insertar el ticket
       const { data: ticketData, error: ticketError } = await supabase
         .from("tickets")
@@ -144,11 +151,11 @@ function ReserveFlyView() {
           },
         ])
         .select();
-  
+
       if (ticketError) throw ticketError;
-  
+
       console.log("Ticket creado exitosamente:", ticketData);
-  
+
       // Obtener el valor más alto de id_pago ordenando los registros en orden descendente
       const { data: maxPagoData, error: maxPagoError } = await supabase
         .from("registro_de_pagos")
@@ -156,12 +163,12 @@ function ReserveFlyView() {
         .order("id_pago", { ascending: false })
         .limit(1)
         .single();
-  
+
       if (maxPagoError) throw maxPagoError;
-  
+
       // Si no hay pagos previos, comenzamos con el id 1
       const nuevoIdPago = maxPagoData ? maxPagoData.id_pago + 1 : 1;
-  
+
       console.log("Insertando pago con los siguientes datos:", {
         id_pago: nuevoIdPago,
         id_ticket: ticketData[0].id_ticket,
@@ -169,7 +176,7 @@ function ReserveFlyView() {
         monto: precioFinal,
         metodo_pago: metodoPago,
       });
-  
+
       // Ahora insertar el pago con el nuevo id_pago generado manualmente
       const { data: pagoData, error: pagoError } = await supabase
         .from("registro_de_pagos")
@@ -183,16 +190,16 @@ function ReserveFlyView() {
           },
         ])
         .select();
-  
+
       if (pagoError) throw pagoError;
-  
+
       console.log("Pago registrado exitosamente:", pagoData);
-  
+
       // Confirmar la reserva
       alert(
         "Reserva realizada con éxito. Tu número de ticket es: " + numeroTicket
       );
-  
+
       // Limpiar estados
       setSelectedRuta(null);
       setSelectedVuelo(null);
@@ -205,8 +212,6 @@ function ReserveFlyView() {
       alert("Hubo un error al realizar la reserva. Intenta nuevamente.");
     }
   };
-  
-  
 
   const navigate = useNavigate();
 
