@@ -48,6 +48,35 @@ function ReserveFlyView() {
     }
   }, [selectedVuelo, clase, vuelos]);
 
+  // Este useEffect actualiza el precio cuando cambia el peso del equipaje
+  useEffect(() => {
+    if (selectedVuelo && vuelos.length > 0) {
+      const selectedVueloId = parseInt(selectedVuelo, 10);
+      let vueloSeleccionado = null;
+  
+      for (let fecha of vuelos) {
+        vueloSeleccionado = fecha.find((vuelo) => vuelo.id_vuelo === selectedVueloId);
+        if (vueloSeleccionado) break;
+      }
+  
+      if (vueloSeleccionado) {
+        let precio = vueloSeleccionado.precio;
+  
+        // Ajuste del precio si es clase Business
+        if (clase === "Business") {
+          precio = precio * 1.5; // Aumentar el precio en un 50% para Business
+        }
+  
+        // Si el campo de equipaje está vacío, lo tratamos como 0
+        const peso = equipaje.peso ? parseFloat(equipaje.peso) : 0;
+  
+        // Calcular el precio adicional por el peso del equipaje (en caso de que haya peso)
+        const costoEquipaje = peso * 0.06 * precio; // 6% del precio por cada kg
+        setPrecioFinal(precio + costoEquipaje); // Establecer el nuevo precio final
+      }
+    }
+  }, [equipaje.peso, selectedVuelo, vuelos, clase]);
+
   const fetchRutas = async () => {
     const { data, error } = await supabase.from("rutas").select("*");
     if (error) {
@@ -262,7 +291,7 @@ function ReserveFlyView() {
           <option value="">Selecciona un vuelo</option>
           {vuelos.flat().map((vuelo) => (
             <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
-              {vuelo.fecha_salida} - {vuelo.hora_salida} | {vuelo.precio} €
+              {vuelo.fecha_salida} - {vuelo.hora_salida} | {vuelo.precio} $
             </option>
           ))}
         </select>
