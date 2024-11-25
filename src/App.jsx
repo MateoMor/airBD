@@ -8,6 +8,7 @@ import Header from "./components/Header";
 import { UserProvider } from "./context/UserContext";
 import UserTicketsView from "./view/UserTicketsView";
 import AvailableFlightsView from "./view/AvailableFlightsView";
+import FlightDetailsView from "./view/FlightDetailsView";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/reserveFly" element={<ReserveFlyView />} />
             <Route path='/misTickets' element={<UserTicketsView />} />
             <Route path="/availableFlights" element={<AvailableFlightsView />} />
+            <Route path="/vuelo/:id_vuelo" element={<FlightDetailsView />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
           </Routes>

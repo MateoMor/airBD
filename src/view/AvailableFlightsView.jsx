@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";  // Importar Link para la navegación
 import { supabase } from "../db/supabaseClient";
 
 function AvailableFlightsView() {
@@ -54,6 +55,7 @@ function AvailableFlightsView() {
               <th className="text-left px-4 py-2 border-b">Fecha</th>
               <th className="text-left px-4 py-2 border-b">Hora</th>
               <th className="text-left px-4 py-2 border-b">Precio</th>
+              <th className="text-left px-4 py-2 border-b">Acciones</th> {/* Nueva columna para el botón */}
             </tr>
           </thead>
           <tbody>
@@ -65,6 +67,14 @@ function AvailableFlightsView() {
                 <td className="px-4 py-2 border-b">{vuelo.fecha_salida}</td>
                 <td className="px-4 py-2 border-b">{vuelo.hora_salida}</td>
                 <td className="px-4 py-2 border-b">${vuelo.precio}</td>
+                <td className="px-4 py-2 border-b">
+                  <Link
+                    to={`/vuelo/${vuelo.id_vuelo}`}  // Enlace para la vista de detalles del vuelo
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    Ver detalles
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
