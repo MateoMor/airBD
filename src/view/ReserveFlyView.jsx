@@ -252,7 +252,7 @@ function ReserveFlyView() {
   const navigate = useNavigate();
 
   const handleVerTickets = () => {
-    navigate("/myTickets");
+    navigate("/misTickets");
   };
 
   return (
