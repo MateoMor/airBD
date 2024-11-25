@@ -3,9 +3,9 @@ import { supabase } from "../db/supabaseClient";
 import { UserContext } from "../context/UserContext";
 
 function UserTicketsView() {
-  const { user } = useContext(UserContext); // Obtener información del usuario desde el contexto
+  const { user } = useContext(UserContext); // Get user information from context
   const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true); // Estado para indicar la carga de datos
+  const [loading, setLoading] = useState(true); // State to indicate data loading
 
   useEffect(() => {
     fetchTickets();
@@ -15,7 +15,7 @@ function UserTicketsView() {
     try {
       setLoading(true);
 
-      // Consulta para obtener los tickets del usuario actual, incluyendo los datos de pago
+      // Query to get the user's tickets, including payment details
       const { data, error } = await supabase
         .from("tickets")
         .select(`
@@ -36,13 +36,13 @@ function UserTicketsView() {
             metodo_pago
           )
         `)
-        .eq("id_pasajero", user.id_pasajero); // Filtrar por el ID del pasajero
+        .eq("id_pasajero", user.id_pasajero); // Filter by passenger ID
 
       if (error) throw error;
 
-      setTickets(data || []); // Guardar los tickets en el estado
+      setTickets(data || []); // Store tickets in state
     } catch (error) {
-      console.error("Error al obtener los tickets:", error.message);
+      console.error("Error fetching tickets:", error.message);
     } finally {
       setLoading(false);
     }
@@ -50,27 +50,27 @@ function UserTicketsView() {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Mis Tickets</h1>
+      <h1 className="text-2xl font-bold mb-4">My Tickets</h1>
 
       {loading ? (
-        <p className="text-gray-700">Cargando tickets...</p>
+        <p className="text-gray-700">Loading tickets...</p>
       ) : tickets.length === 0 ? (
-        <p className="text-gray-700">No tienes tickets registrados.</p>
+        <p className="text-gray-700">You have no tickets registered.</p>
       ) : (
         <table className="min-w-full bg-white border border-gray-300 rounded-lg">
           <thead>
             <tr className="bg-gray-200">
               <th className="text-left px-4 py-2 border-b"># Ticket</th>
-              <th className="text-left px-4 py-2 border-b">Vuelo</th>
-              <th className="text-left px-4 py-2 border-b">Fecha</th>
-              <th className="text-left px-4 py-2 border-b">Hora Salida</th>
-              <th className="text-left px-4 py-2 border-b">Hora Llegada</th>
-              <th className="text-left px-4 py-2 border-b">Origen</th>
-              <th className="text-left px-4 py-2 border-b">Destino</th>
-              <th className="text-left px-4 py-2 border-b">Clase</th>
-              <th className="text-left px-4 py-2 border-b">Precio</th>
-              <th className="text-left px-4 py-2 border-b">Fecha Pago</th>
-              <th className="text-left px-4 py-2 border-b">Método de Pago</th>
+              <th className="text-left px-4 py-2 border-b">Flight</th>
+              <th className="text-left px-4 py-2 border-b">Date</th>
+              <th className="text-left px-4 py-2 border-b">Departure Time</th>
+              <th className="text-left px-4 py-2 border-b">Arrival Time</th>
+              <th className="text-left px-4 py-2 border-b">Origin</th>
+              <th className="text-left px-4 py-2 border-b">Destination</th>
+              <th className="text-left px-4 py-2 border-b">Class</th>
+              <th className="text-left px-4 py-2 border-b">Price</th>
+              <th className="text-left px-4 py-2 border-b">Payment Date</th>
+              <th className="text-left px-4 py-2 border-b">Payment Method</th>
             </tr>
           </thead>
           <tbody>
@@ -85,12 +85,12 @@ function UserTicketsView() {
                 <td className="px-4 py-2 border-b">{ticket.vuelos.destino}</td>
                 <td className="px-4 py-2 border-b">{ticket.clase}</td>
                 <td className="px-4 py-2 border-b">${ticket.precio}</td>
-                {/* Información del pago */}
+                {/* Payment information */}
                 <td className="px-4 py-2 border-b">
-                  {ticket.registro_de_pagos?.fecha_pago || "No disponible"}
+                  {ticket.registro_de_pagos?.fecha_pago || "Not available"}
                 </td>
                 <td className="px-4 py-2 border-b">
-                  {ticket.registro_de_pagos?.metodo_pago || "No disponible"}
+                  {ticket.registro_de_pagos?.metodo_pago || "Not available"}
                 </td>
               </tr>
             ))}

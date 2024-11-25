@@ -1,21 +1,21 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';  // Usamos el hook useNavigate para redirigir
+import { useNavigate } from 'react-router-dom';  // Using the useNavigate hook for redirection
 
 function HomePage() {
-  const navigate = useNavigate();  // Inicializamos el hook useNavigate
+  const navigate = useNavigate();  // Initialize the useNavigate hook
 
-  // Funciones para manejar la redirección
+  // Functions to handle redirection
   const goToLogin = () => {
-    navigate('/login');  // Redirige a la página de login
+    navigate('/login');  // Redirects to the login page
   };
 
   const goToSignUp = () => {
-    navigate('/signup');  // Redirige a la página de sign up
+    navigate('/signup');  // Redirects to the sign-up page
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-8">Bienvenido a AirDB</h1>
+      <h1 className="text-3xl font-bold mb-8">Welcome to AirDB</h1>
       <div className="flex flex-col gap-4">
         <button
           onClick={goToLogin}

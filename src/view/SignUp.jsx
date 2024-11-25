@@ -6,10 +6,10 @@ function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [documentoIdentidad, setDocumentoIdentidad] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [identityDocument, setIdentityDocument] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,47 +20,47 @@ function SignUp() {
     setLoading(true);
     setError(null);
 
-    // Verificar si las contraseñas coinciden
+    // Verify if the passwords match
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      setError("Passwords do not match.");
       setLoading(false);
       return;
     }
 
     try {
-      // Insertar el nuevo usuario en la tabla 'pasajeros'
+      // Insert the new user into the 'pasajeros' table
       const { data, error: insertError } = await supabase
         .from('pasajeros')
         .insert([
           {
-            nombre,
-            apellido,
+            nombre: firstName,
+            apellido: lastName,
             email,
-            telefono,
-            documento_identidad: documentoIdentidad,
-            contraseña: password, // Nota: Asegúrate de cifrar las contraseñas en un entorno real
+            telefono: phone,
+            documento_identidad: identityDocument,
+            contraseña: password, // Note: Ensure to encrypt passwords in a real environment
           },
         ]);
 
       if (insertError) {
-        // Identificar si el error es por valores duplicados
+        // Identify if the error is due to duplicate values
         if (insertError.message.includes('duplicate key value')) {
           if (insertError.message.includes('pasajeros_email_key')) {
-            setError("El correo electrónico ya está en uso.");
+            setError("Email is already in use.");
           } else if (insertError.message.includes('pasajeros_documento_identidad_key')) {
-            setError("El documento de identidad ya está en uso.");
+            setError("Identity document is already in use.");
           } else {
-            setError("Error desconocido al registrar.");
+            setError("Unknown error during registration.");
           }
         } else {
-          setError('Error al registrar el usuario: ' + insertError.message);
+          setError('Error registering user: ' + insertError.message);
         }
       } else {
-        console.log('Usuario registrado exitosamente:', data);
-        navigate('/login'); // Redirige al usuario al login
+        console.log('User registered successfully:', data);
+        navigate('/login'); // Redirect user to login page
       }
     } catch (err) {
-      setError('Error al registrar: ' + err.message);
+      setError('Error registering: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ function SignUp() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white rounded shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Crear Cuenta</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Create Account</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded">
@@ -79,75 +79,75 @@ function SignUp() {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
-              Nombre
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+              First Name
             </label>
             <input
               type="text"
-              id="nombre"
-              name="nombre"
+              id="firstName"
+              name="firstName"
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               required
             />
           </div>
 
           <div className="mb-4">
-            <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">
-              Apellido
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+              Last Name
             </label>
             <input
               type="text"
-              id="apellido"
-              name="apellido"
+              id="lastName"
+              name="lastName"
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              value={apellido}
-              onChange={(e) => setApellido(e.target.value)}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               required
             />
           </div>
 
           <div className="mb-4">
-            <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">
-              Teléfono
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              Phone
             </label>
             <input
               type="text"
-              id="telefono"
-              name="telefono"
+              id="phone"
+              name="phone"
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required
             />
           </div>
 
           <div className="mb-4">
-            <label htmlFor="documentoIdentidad" className="block text-sm font-medium text-gray-700">
-              Documento de Identidad
+            <label htmlFor="identityDocument" className="block text-sm font-medium text-gray-700">
+              Identity Document
             </label>
             <input
               type="text"
-              id="documentoIdentidad"
-              name="documentoIdentidad"
+              id="identityDocument"
+              name="identityDocument"
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              value={documentoIdentidad}
-              onChange={(e) => setDocumentoIdentidad(e.target.value)}
+              value={identityDocument}
+              onChange={(e) => setIdentityDocument(e.target.value)}
               required
             />
           </div>
 
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Correo Electrónico
+              Email Address
             </label>
             <input
               type="email"
               id="email"
               name="email"
               className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="correo@ejemplo.com"
+              placeholder="email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -156,7 +156,7 @@ function SignUp() {
 
           <div className="mb-4">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Contraseña
+              Password
             </label>
             <input
               type="password"
@@ -172,7 +172,7 @@ function SignUp() {
 
           <div className="mb-4">
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-              Confirmar Contraseña
+              Confirm Password
             </label>
             <input
               type="password"
@@ -191,7 +191,7 @@ function SignUp() {
             className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             disabled={loading}
           >
-            {loading ? 'Cargando...' : 'Crear Cuenta'}
+            {loading ? 'Loading...' : 'Create Account'}
           </button>
         </form>
       </div>

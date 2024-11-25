@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
-import { supabase } from "../db/supabaseClient"; // Importar configuración de Supabase
-import { UserContext } from "../context/UserContext"; // Importa el contexto del usuario
+import { supabase } from "../db/supabaseClient"; // Import Supabase configuration
+import { UserContext } from "../context/UserContext"; // Import user context
 import { useNavigate } from "react-router-dom";
 
 function ReserveFlyView() {
-  const { user } = useContext(UserContext); // Obtener información del usuario desde el contexto
+  const { user } = useContext(UserContext); // Get user info from context
   const [rutas, setRutas] = useState([]);
   const [vuelos, setVuelos] = useState([]);
   const [selectedRuta, setSelectedRuta] = useState(null);
@@ -12,43 +12,43 @@ function ReserveFlyView() {
   const [equipaje, setEquipaje] = useState({
     peso: "",
   });
-  const [metodoPago, setMetodoPago] = useState(""); // Estado para el método de pago
-  const [clase, setClase] = useState("Economy"); // Estado para la clase seleccionada
-  const [precioFinal, setPrecioFinal] = useState(0); // Estado para el precio final
+  const [metodoPago, setMetodoPago] = useState(""); // State for payment method
+  const [clase, setClase] = useState("Economy"); // State for selected class
+  const [precioFinal, setPrecioFinal] = useState(0); // State for final price
 
   useEffect(() => {
     fetchRutas();
   }, []);
 
   useEffect(() => {
-    // Convertir selectedVuelo a un número entero
+    // Convert selectedVuelo to an integer
     const selectedVueloId = parseInt(selectedVuelo, 10);
 
     if (selectedVueloId && vuelos.length > 0) {
-      // Buscar el vuelo seleccionado directamente en el arreglo de vuelos
+      // Find selected flight directly in the flights array
       let vueloSeleccionado = null;
 
       for (let fecha of vuelos) {
         vueloSeleccionado = fecha.find(
           (vuelo) => vuelo.id_vuelo === selectedVueloId
         );
-        if (vueloSeleccionado) break; // Salir del loop si encontramos el vuelo
+        if (vueloSeleccionado) break; // Exit loop if flight is found
       }
 
       if (vueloSeleccionado) {
         let precio = vueloSeleccionado.precio;
 
-        // Ajuste del precio si es clase Business
+        // Adjust price if class is Business
         if (clase === "Business") {
-          precio = precio * 1.5; // Aumentar el precio en un 50% para Business
+          precio = precio * 1.5; // Increase price by 50% for Business
         }
 
-        setPrecioFinal(precio); // Establecer el precio final
+        setPrecioFinal(precio); // Set final price
       }
     }
   }, [selectedVuelo, clase, vuelos]);
 
-  // Este useEffect actualiza el precio cuando cambia el peso del equipaje
+  // This useEffect updates the price when luggage weight changes
   useEffect(() => {
     if (selectedVuelo && vuelos.length > 0) {
       const selectedVueloId = parseInt(selectedVuelo, 10);
@@ -64,17 +64,17 @@ function ReserveFlyView() {
       if (vueloSeleccionado) {
         let precio = vueloSeleccionado.precio;
 
-        // Ajuste del precio si es clase Business
+        // Adjust price if class is Business
         if (clase === "Business") {
-          precio = precio * 1.5; // Aumentar el precio en un 50% para Business
+          precio = precio * 1.5; // Increase price by 50% for Business
         }
 
-        // Si el campo de equipaje está vacío, lo tratamos como 0
+        // If luggage field is empty, treat it as 0
         const peso = equipaje.peso ? parseFloat(equipaje.peso) : 0;
 
-        // Calcular el precio adicional por el peso del equipaje (en caso de que haya peso)
-        const costoEquipaje = peso * 0.06 * precio; // 6% del precio por cada kg
-        setPrecioFinal(precio + costoEquipaje); // Establecer el nuevo precio final
+        // Calculate additional cost for luggage weight (if any)
+        const costoEquipaje = peso * 0.06 * precio; // 6% of price per kg
+        setPrecioFinal(precio + costoEquipaje); // Set new final price
       }
     }
   }, [equipaje.peso, selectedVuelo, vuelos, clase]);
@@ -91,7 +91,7 @@ function ReserveFlyView() {
   const fetchVuelos = async (rutaId) => {
     const { data, error } = await supabase
       .from("vuelos")
-      .select("*") // Solo seleccionamos todos los campos, sin necesidad de agregar precio
+      .select("*") // Select all fields, no need to add price here
       .eq("id_ruta", rutaId);
 
     if (error) {
@@ -112,7 +112,7 @@ function ReserveFlyView() {
         );
       }
 
-      setVuelos(Object.values(vuelosPorFecha)); // Guardar los vuelos agrupados
+      setVuelos(Object.values(vuelosPorFecha)); // Store grouped flights
     }
   };
 
@@ -129,7 +129,7 @@ function ReserveFlyView() {
   const handleEquipajeChange = (e) => {
     let peso = e.target.value;
 
-    // Si el peso es mayor que 12, lo ajustamos a 12
+    // If weight is greater than 12, adjust it to 12
     if (peso > 12) {
       peso = 12;
     }
@@ -142,24 +142,24 @@ function ReserveFlyView() {
   };
 
   const handleClaseChange = (e) => {
-    setClase(e.target.value); // Cambiar la clase seleccionada
+    setClase(e.target.value); // Change selected class
   };
 
   const handleReserva = async () => {
-    // Verificación de campos incompletos
+    // Check for incomplete fields
     if (
       !selectedVuelo ||
       !metodoPago ||
       precioFinal <= 0 ||
-      !equipaje.peso // No pedimos más datos de equipaje
+      !equipaje.peso // No need for more luggage data
     ) {
-      // Mostrar una alerta si algún campo es incompleto
-      alert("Por favor, completa todos los campos necesarios.");
-      return; // No proceder con la reserva
+      // Show alert if any field is incomplete
+      alert("Please fill out all required fields.");
+      return; // Do not proceed with reservation
     }
 
     try {
-      // Verificar que el vuelo existe
+      // Verify flight exists
       const { data: vuelo, error: vueloError } = await supabase
         .from("vuelos")
         .select("*")
@@ -167,20 +167,20 @@ function ReserveFlyView() {
         .single();
 
       if (vueloError || !vuelo) {
-        alert("Vuelo no encontrado. Por favor, selecciona un vuelo válido.");
+        alert("Flight not found. Please select a valid flight.");
         return;
       }
 
-      // Generar un número de ticket único
-      const numeroTicket = `TKT${selectedVuelo}-${Date.now()}`; // Ejemplo con ID de vuelo y timestamp
+      // Generate unique ticket number
+      const numeroTicket = `TKT${selectedVuelo}-${Date.now()}`; // Example with flight ID and timestamp
 
-      // Insertar el ticket
+      // Insert ticket
       const { data: ticketData, error: ticketError } = await supabase
         .from("tickets")
         .insert([
           {
             id_vuelo: selectedVuelo,
-            id_pasajero: user.id_pasajero, // ID del usuario como pasajero
+            id_pasajero: user.id_pasajero, // User ID as passenger
             numero_ticket: numeroTicket,
             clase: clase,
             precio: precioFinal,
@@ -190,9 +190,9 @@ function ReserveFlyView() {
 
       if (ticketError) throw ticketError;
 
-      console.log("Ticket creado exitosamente:", ticketData);
+      console.log("Ticket created successfully:", ticketData);
 
-      // Obtener el valor más alto de id_pago ordenando los registros en orden descendente
+      // Get highest id_pago value by ordering in descending order
       const { data: maxPagoData, error: maxPagoError } = await supabase
         .from("registro_de_pagos")
         .select("id_pago")
@@ -202,10 +202,10 @@ function ReserveFlyView() {
 
       if (maxPagoError) throw maxPagoError;
 
-      // Si no hay pagos previos, comenzamos con el id 1
+      // If no previous payments, start with id 1
       const nuevoIdPago = maxPagoData ? maxPagoData.id_pago + 1 : 1;
 
-      console.log("Insertando pago con los siguientes datos:", {
+      console.log("Inserting payment with the following data:", {
         id_pago: nuevoIdPago,
         id_ticket: ticketData[0].id_ticket,
         fecha_pago: new Date().toISOString(),
@@ -213,163 +213,201 @@ function ReserveFlyView() {
         metodo_pago: metodoPago,
       });
 
-      // Ahora insertar el pago con el nuevo id_pago generado manualmente
+      // Insert payment with new manually generated id_pago
       const { data: pagoData, error: pagoError } = await supabase
         .from("registro_de_pagos")
         .insert([
           {
-            id_pago: nuevoIdPago, // Usar el nuevo id_pago
-            id_ticket: ticketData[0].id_ticket, // ID del ticket recién insertado
-            fecha_pago: new Date().toISOString(), // Fecha actual
+            id_pago: nuevoIdPago, // Use new id_pago
+            id_ticket: ticketData[0].id_ticket, // Newly inserted ticket ID
+            fecha_pago: new Date().toISOString(), // Current date
             monto: precioFinal,
-            metodo_pago: metodoPago, // Método de pago seleccionado
+            metodo_pago: metodoPago, // Selected payment method
           },
         ])
         .select();
 
       if (pagoError) throw pagoError;
 
-      console.log("Pago registrado exitosamente:", pagoData);
+      console.log("Payment recorded successfully:", pagoData);
 
-      // Confirmar la reserva
+      // Confirm reservation
       alert(
-        "Reserva realizada con éxito. Tu número de ticket es: " + numeroTicket
+        "Reservation successful. Your ticket number is: " + numeroTicket
       );
 
-      // Limpiar estados
+      // Clear states
       setSelectedRuta(null);
       setSelectedVuelo(null);
-      setEquipaje({ peso: "" }); // Limpiar solo el peso
+      setEquipaje({ peso: "" }); // Clear only the weight
       setMetodoPago("");
       setClase("Economy");
       setPrecioFinal(0);
     } catch (error) {
-      console.error("Error al crear el ticket o el pago:", error.message);
-      alert("Hubo un error al realizar la reserva. Intenta nuevamente.");
+      console.error("Error creating ticket or payment:", error.message);
+      alert("There was an error processing the reservation. Please try again.");
     }
   };
 
   const navigate = useNavigate();
 
   const handleVerTickets = () => {
-    navigate("/misTickets");
+    navigate("/myTickets");
   };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Reserva de Vuelo</h1>
+      <h1 className="text-2xl font-bold mb-4">Flight Reservation</h1>
 
-      {/* Información del usuario */}
+      {/* User information */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Información del Usuario</h2>
+        <h2 className="text-lg font-semibold mb-2">User Information</h2>
         <p>
-          <strong>Nombre:</strong> {user.nombre}
+          <strong>First Name:</strong> {user.nombre}
         </p>
         <p>
-          <strong>Apellido:</strong> {user.apellido}
+          <strong>Last Name:</strong> {user.apellido}
         </p>
         <p>
           <strong>Email:</strong> {user.email}
         </p>
       </div>
 
-      {/* Selección de la ruta */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">Ruta</label>
-        <select
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          onChange={handleRutaChange}
+      {/* Route selection */}
+      <div className="mb-4">
+        <label
+          htmlFor="ruta"
+          className="block text-sm font-medium text-gray-700 mb-2"
         >
-          <option value="">Selecciona una ruta</option>
+          Select Route
+        </label>
+        <select
+          id="ruta"
+          value={selectedRuta}
+          onChange={handleRutaChange}
+          className="w-full p-2 border border-gray-300 rounded-md"
+        >
+          <option value="">-- Select a route --</option>
           {rutas.map((ruta) => (
             <option key={ruta.id_ruta} value={ruta.id_ruta}>
-              {ruta.origen} - {ruta.destino}
+              {ruta.origen} to {ruta.destino}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Selección del vuelo */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">Vuelo</label>
-        <select
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          onChange={handleVueloChange}
-          value={selectedVuelo}
+      {/* Flight selection */}
+      {selectedRuta && (
+        <div className="mb-4">
+          <label
+            htmlFor="vuelo"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Select Flight
+          </label>
+          <select
+            id="vuelo"
+            value={selectedVuelo}
+            onChange={handleVueloChange}
+            className="w-full p-2 border border-gray-300 rounded-md"
+          >
+            <option value="">-- Select a flight --</option>
+            {vuelos.map((fecha) =>
+              fecha.map((vuelo) => (
+                <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
+                  {`${vuelo.fecha_salida} at ${vuelo.hora_salida} - Price: $${vuelo.precio}`}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+      )}
+
+      {/* Baggage input */}
+      <div className="mb-4">
+        <label
+          htmlFor="equipaje"
+          className="block text-sm font-medium text-gray-700 mb-2"
         >
-          <option value="">Selecciona un vuelo</option>
-          {vuelos.flat().map((vuelo) => (
-            <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
-              {vuelo.fecha_salida} - {vuelo.hora_salida} | {vuelo.precio} $
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Selección del peso del equipaje */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">
-          Peso del Equipaje
+          Luggage Weight (kg)
         </label>
         <input
           type="number"
-          name="peso"
+          id="equipaje"
           value={equipaje.peso}
           onChange={handleEquipajeChange}
-          placeholder="Ingresa el peso en kg (máx. 12 kg)" // Placeholder agregado
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          className="w-full p-2 border border-gray-300 rounded-md"
+          min="0"
+          max="12"
         />
       </div>
 
-      {/* Selección de la clase */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">Clase</label>
+      {/* Class selection */}
+      <div className="mb-4">
+        <label
+          htmlFor="clase"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Select Class
+        </label>
         <select
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          onChange={handleClaseChange}
+          id="clase"
           value={clase}
+          onChange={handleClaseChange}
+          className="w-full p-2 border border-gray-300 rounded-md"
         >
           <option value="Economy">Economy</option>
           <option value="Business">Business</option>
         </select>
       </div>
 
-      {/* Selección del método de pago */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">
-          Método de Pago
+      {/* Payment method */}
+      <div className="mb-4">
+        <label
+          htmlFor="metodoPago"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Payment Method
         </label>
         <select
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          onChange={handleMetodoPagoChange}
+          id="metodoPago"
           value={metodoPago}
+          onChange={handleMetodoPagoChange}
+          className="w-full p-2 border border-gray-300 rounded-md"
         >
-          <option value="">Selecciona un método de pago</option>
-          <option value="Tarjeta">Tarjeta de Crédito</option>
-          <option value="Paypal">PayPal</option>
+          <option value="">-- Select a payment method --</option>
+          <option value="creditCard">Credit Card</option>
+          <option value="paypal">PayPal</option>
+          <option value="bankTransfer">Bank Transfer</option>
         </select>
       </div>
 
-      {/* Precio final */}
-      <div className="mb-6">
-        <p className="font-semibold">Precio Final: {precioFinal} $</p>
+      {/* Final Price */}
+      <div className="mb-4">
+        <p>
+          <strong>Final Price:</strong> ${precioFinal}
+        </p>
       </div>
 
-      {/* Botón para realizar la reserva */}
-      <button
-        onClick={handleReserva}
-        className="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-md shadow-md hover:bg-blue-600"
-      >
-        Realizar Reserva
-      </button>
+      {/* Reservation button */}
+      <div className="mb-4">
+        <button
+          onClick={handleReserva}
+          className="w-full p-3 bg-blue-600 text-white rounded-md"
+        >
+          Reserve Flight
+        </button>
+      </div>
 
-      {/* Botón para ver los tickets */}
-      <button
-        onClick={handleVerTickets}
-        className="w-full py-2 px-4 mt-4 bg-gray-300 text-black font-semibold rounded-md shadow-md hover:bg-gray-400"
-      >
-        Ver Mis Tickets
-      </button>
+      {/* My Tickets button */}
+      <div className="mb-4">
+        <button
+          onClick={handleVerTickets}
+          className="w-full p-3 bg-green-600 text-white rounded-md"
+        >
+          View My Tickets
+        </button>
+      </div>
     </div>
   );
 }
