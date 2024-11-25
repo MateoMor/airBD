@@ -53,23 +53,25 @@ function ReserveFlyView() {
     if (selectedVuelo && vuelos.length > 0) {
       const selectedVueloId = parseInt(selectedVuelo, 10);
       let vueloSeleccionado = null;
-  
+
       for (let fecha of vuelos) {
-        vueloSeleccionado = fecha.find((vuelo) => vuelo.id_vuelo === selectedVueloId);
+        vueloSeleccionado = fecha.find(
+          (vuelo) => vuelo.id_vuelo === selectedVueloId
+        );
         if (vueloSeleccionado) break;
       }
-  
+
       if (vueloSeleccionado) {
         let precio = vueloSeleccionado.precio;
-  
+
         // Ajuste del precio si es clase Business
         if (clase === "Business") {
           precio = precio * 1.5; // Aumentar el precio en un 50% para Business
         }
-  
+
         // Si el campo de equipaje está vacío, lo tratamos como 0
         const peso = equipaje.peso ? parseFloat(equipaje.peso) : 0;
-  
+
         // Calcular el precio adicional por el peso del equipaje (en caso de que haya peso)
         const costoEquipaje = peso * 0.06 * precio; // 6% del precio por cada kg
         setPrecioFinal(precio + costoEquipaje); // Establecer el nuevo precio final
@@ -125,7 +127,14 @@ function ReserveFlyView() {
   };
 
   const handleEquipajeChange = (e) => {
-    setEquipaje({ ...equipaje, [e.target.name]: e.target.value });
+    let peso = e.target.value;
+
+    // Si el peso es mayor que 12, lo ajustamos a 12
+    if (peso > 12) {
+      peso = 12;
+    }
+
+    setEquipaje({ ...equipaje, peso: peso });
   };
 
   const handleMetodoPagoChange = (e) => {
@@ -299,12 +308,15 @@ function ReserveFlyView() {
 
       {/* Selección del peso del equipaje */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">Peso del Equipaje</label>
+        <label className="block text-sm font-medium text-gray-700">
+          Peso del Equipaje
+        </label>
         <input
           type="number"
           name="peso"
           value={equipaje.peso}
           onChange={handleEquipajeChange}
+          placeholder="Ingresa el peso en kg (máx. 12 kg)" // Placeholder agregado
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
@@ -324,7 +336,9 @@ function ReserveFlyView() {
 
       {/* Selección del método de pago */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">Método de Pago</label>
+        <label className="block text-sm font-medium text-gray-700">
+          Método de Pago
+        </label>
         <select
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           onChange={handleMetodoPagoChange}
