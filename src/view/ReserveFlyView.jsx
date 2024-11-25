@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { supabase } from "../db/supabaseClient"; // Importar configuración de Supabase
 import { UserContext } from "../context/UserContext"; // Importa el contexto del usuario
+import { useNavigate } from "react-router-dom";
 
 function ReserveFlyView() {
   const { user } = useContext(UserContext); // Obtener información del usuario desde el contexto
@@ -21,32 +22,32 @@ function ReserveFlyView() {
   }, []);
 
   useEffect(() => {
-  
     // Convertir selectedVuelo a un número entero
     const selectedVueloId = parseInt(selectedVuelo, 10);
-  
+
     if (selectedVueloId && vuelos.length > 0) {
       // Buscar el vuelo seleccionado directamente en el arreglo de vuelos
       let vueloSeleccionado = null;
-  
+
       for (let fecha of vuelos) {
-        vueloSeleccionado = fecha.find((vuelo) => vuelo.id_vuelo === selectedVueloId);
+        vueloSeleccionado = fecha.find(
+          (vuelo) => vuelo.id_vuelo === selectedVueloId
+        );
         if (vueloSeleccionado) break; // Salir del loop si encontramos el vuelo
       }
-  
+
       if (vueloSeleccionado) {
         let precio = vueloSeleccionado.precio;
-  
+
         // Ajuste del precio si es clase Business
         if (clase === "Business") {
           precio = precio * 1.5; // Aumentar el precio en un 50% para Business
         }
-  
+
         setPrecioFinal(precio); // Establecer el precio final
       }
     }
-  }, [selectedVuelo, clase, vuelos]); 
-
+  }, [selectedVuelo, clase, vuelos]);
 
   const fetchRutas = async () => {
     const { data, error } = await supabase.from("rutas").select("*");
@@ -62,7 +63,7 @@ function ReserveFlyView() {
       .from("vuelos")
       .select("*") // Solo seleccionamos todos los campos, sin necesidad de agregar precio
       .eq("id_ruta", rutaId);
-  
+
     if (error) {
       console.error("Error fetching flights:", error);
     } else {
@@ -74,16 +75,16 @@ function ReserveFlyView() {
         acc[fecha].push(vuelo);
         return acc;
       }, {});
-  
-      
+
       for (const fecha in vuelosPorFecha) {
-        vuelosPorFecha[fecha].sort((a, b) => a.hora_salida.localeCompare(b.hora_salida));
+        vuelosPorFecha[fecha].sort((a, b) =>
+          a.hora_salida.localeCompare(b.hora_salida)
+        );
       }
-  
+
       setVuelos(Object.values(vuelosPorFecha)); // Guardar los vuelos agrupados
     }
   };
-  
 
   const handleRutaChange = (e) => {
     const rutaId = e.target.value;
@@ -113,7 +114,7 @@ function ReserveFlyView() {
       alert("Por favor, completa todos los campos necesarios.");
       return;
     }
-  
+
     try {
       // Verificar que el vuelo existe
       const { data: vuelo, error: vueloError } = await supabase
@@ -121,15 +122,15 @@ function ReserveFlyView() {
         .select("*")
         .eq("id_vuelo", selectedVuelo)
         .single();
-  
+
       if (vueloError || !vuelo) {
         alert("Vuelo no encontrado. Por favor, selecciona un vuelo válido.");
         return;
       }
-  
+
       // Generar un número de ticket único
       const numeroTicket = `TKT${selectedVuelo}-${Date.now()}`; // Ejemplo con ID de vuelo y timestamp
-  
+
       // Insertar el ticket
       const { data: ticketData, error: ticketError } = await supabase
         .from("tickets")
@@ -143,14 +144,16 @@ function ReserveFlyView() {
           },
         ])
         .select();
-  
+
       if (ticketError) throw ticketError;
-  
+
       console.log("Ticket creado exitosamente:", ticketData);
-  
+
       // Confirmar la reserva
-      alert("Reserva realizada con éxito. Tu número de ticket es: " + numeroTicket);
-  
+      alert(
+        "Reserva realizada con éxito. Tu número de ticket es: " + numeroTicket
+      );
+
       // Limpiar estados
       setSelectedRuta(null);
       setSelectedVuelo(null);
@@ -163,8 +166,12 @@ function ReserveFlyView() {
       alert("Hubo un error al realizar la reserva. Intenta nuevamente.");
     }
   };
-  
-  
+
+  const navigate = useNavigate();
+
+  const handleVerTickets = () => {
+    navigate("/misTickets");
+  };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -173,9 +180,15 @@ function ReserveFlyView() {
       {/* Información del usuario */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Información del Usuario</h2>
-        <p><strong>Nombre:</strong> {user.nombre}</p>
-        <p><strong>Apellido:</strong> {user.apellido}</p>
-        <p><strong>Email:</strong> {user.email}</p>
+        <p>
+          <strong>Nombre:</strong> {user.nombre}
+        </p>
+        <p>
+          <strong>Apellido:</strong> {user.apellido}
+        </p>
+        <p>
+          <strong>Email:</strong> {user.email}
+        </p>
       </div>
 
       {/* Selección de la ruta */}
@@ -197,7 +210,9 @@ function ReserveFlyView() {
       {/* Selección del vuelo por fecha y hora */}
       {Object.keys(vuelos).length > 0 && (
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">Vuelo</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Vuelo
+          </label>
           <select
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             onChange={handleVueloChange}
@@ -207,7 +222,8 @@ function ReserveFlyView() {
               <optgroup key={fecha} label={fecha}>
                 {fecha.map((vuelo) => (
                   <option key={vuelo.id_vuelo} value={vuelo.id_vuelo}>
-                    {vuelo.numero_vuelo} - {vuelo.hora_salida} - {vuelo.destino} - ${vuelo.precio}
+                    {vuelo.numero_vuelo} - {vuelo.hora_salida} - {vuelo.destino}{" "}
+                    - ${vuelo.precio}
                   </option>
                 ))}
               </optgroup>
@@ -252,7 +268,9 @@ function ReserveFlyView() {
 
       {/* Selección de método de pago */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">Método de Pago</label>
+        <label className="block text-sm font-medium text-gray-700">
+          Método de Pago
+        </label>
         <select
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           onChange={handleMetodoPagoChange}
@@ -270,13 +288,21 @@ function ReserveFlyView() {
         <p className="text-lg font-semibold">Precio: ${precioFinal}</p>
       </div>
 
-      <button
-        className="px-4 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700"
-        onClick={handleReserva}
-        disabled={!selectedVuelo || !metodoPago} // Deshabilitar si no se selecciona vuelo o método de pago
-      >
-        Confirmar Reserva
-      </button>
+      <div className="flex gap-4 mt-4">
+        <button
+          className="px-4 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700"
+          onClick={handleReserva}
+          disabled={!selectedVuelo || !metodoPago} // Deshabilitar si no se selecciona vuelo o método de pago
+        >
+          Confirmar Reserva
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-600 text-white font-bold rounded-md hover:bg-gray-700"
+          onClick={handleVerTickets}
+        >
+          Ver tus Tickets
+        </button>
+      </div>
     </div>
   );
 }
