@@ -15,7 +15,7 @@ function UserTicketsView() {
     try {
       setLoading(true);
 
-      // Consulta para obtener los tickets del usuario actual
+      // Consulta para obtener los tickets del usuario actual, incluyendo los datos de pago
       const { data, error } = await supabase
         .from("tickets")
         .select(`
@@ -30,6 +30,10 @@ function UserTicketsView() {
             hora_llegada,
             origen,
             destino
+          ),
+          registro_de_pagos (
+            fecha_pago,
+            metodo_pago
           )
         `)
         .eq("id_pasajero", user.id_pasajero); // Filtrar por el ID del pasajero
@@ -60,11 +64,13 @@ function UserTicketsView() {
               <th className="text-left px-4 py-2 border-b">Vuelo</th>
               <th className="text-left px-4 py-2 border-b">Fecha</th>
               <th className="text-left px-4 py-2 border-b">Hora Salida</th>
-              <th className="text-left px-4 py-2 border-b">Hora Llegada (estimada)</th>
+              <th className="text-left px-4 py-2 border-b">Hora Llegada</th>
               <th className="text-left px-4 py-2 border-b">Origen</th>
               <th className="text-left px-4 py-2 border-b">Destino</th>
               <th className="text-left px-4 py-2 border-b">Clase</th>
               <th className="text-left px-4 py-2 border-b">Precio</th>
+              <th className="text-left px-4 py-2 border-b">Fecha Pago</th>
+              <th className="text-left px-4 py-2 border-b">Método de Pago</th>
             </tr>
           </thead>
           <tbody>
@@ -79,6 +85,13 @@ function UserTicketsView() {
                 <td className="px-4 py-2 border-b">{ticket.vuelos.destino}</td>
                 <td className="px-4 py-2 border-b">{ticket.clase}</td>
                 <td className="px-4 py-2 border-b">${ticket.precio}</td>
+                {/* Información del pago */}
+                <td className="px-4 py-2 border-b">
+                  {ticket.registro_de_pagos?.fecha_pago || "No disponible"}
+                </td>
+                <td className="px-4 py-2 border-b">
+                  {ticket.registro_de_pagos?.metodo_pago || "No disponible"}
+                </td>
               </tr>
             ))}
           </tbody>
